@@ -95,7 +95,21 @@ int main(int argc, const char * argv[]) {
   args[1] = envScriptPath;
   args[2] = podBin;
   for (int i = 1; i < argc; i++) {
-    args[i+2] = *(argv+i);
+//    CFStringRef arg = CFStringCreateWithFormat(NULL, NULL, CFSTR("\"%s\""), *(argv+i));
+    CFStringRef arg = CFStringCreateWithCString(NULL, *(argv+i), kCFStringEncodingUTF8);
+    CFIndex len = CFStringGetLength(arg) + 1;
+    
+    CFMutableStringRef mutableArg = CFStringCreateMutableCopy(NULL, len, arg);
+    
+    CFStringFindAndReplace(mutableArg, CFSTR(" "), CFSTR("\\ "), CFRangeMake(0, len), 0);
+//    CFStringRef arg = CFStringCreateWithCString(NULL, *(argv+i), kCFStringEncodingUTF8);
+    
+    len = CFStringGetLength(mutableArg) + 1;
+    char *argument = (char *)malloc(len);
+    CFStringGetCString(mutableArg, argument, len, kCFStringEncodingUTF8);
+    args[i+2] = argument;
+    CFRelease(arg);
+    CFRelease(mutableArg);
   }
   args[argc+2] = NULL;
 
